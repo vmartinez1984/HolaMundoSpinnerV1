@@ -13,13 +13,14 @@ import androidx.core.view.WindowInsetsCompat;
 import java.util.List;
 
 import xyz.vmartinez84.holamundospinnerv1.models.EstadoModel;
+import xyz.vmartinez84.holamundospinnerv1.services.ApiCallback;
 import xyz.vmartinez84.holamundospinnerv1.services.CodigoPostalService;
 
 public class MainActivity extends AppCompatActivity {
 
     //1.- Declarar el control o compnente
     Spinner spinner;
-    CodigoPostalService service;
+    CodigoPostalService service = new CodigoPostalService();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,13 +35,28 @@ public class MainActivity extends AppCompatActivity {
 
         // 2.- Enlazarlo con la vista
         spinner = findViewById(R.id.spinner);
-        service = new CodigoPostalService();
-        List<EstadoModel> estados = service.obtenerTodosLosEstados();
-        estados.add(0, new EstadoModel(0, "Seleccione "));
-        llenarSpinner(estados);
+        cargarEstados();
+    }
+
+    public  void  cargarEstados(){
+        service.obtenerTodosLosEstados(new ApiCallback<List<EstadoModel>>() {
+            @Override
+            public void onSuccess(List<EstadoModel> estados) {
+                //Con esta instrucción recargamos la vista desde segundo plano
+                runOnUiThread(()->{
+                    llenarSpinner(estados);
+                });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+
+            }
+        });
     }
 
     public void llenarSpinner(List<EstadoModel> estados){
+        estados.add(0, new EstadoModel(0, "Seleccione "));
         ArrayAdapter<EstadoModel> adapter = new ArrayAdapter<>(
           this,
                 android.R.layout.simple_spinner_dropdown_item,
